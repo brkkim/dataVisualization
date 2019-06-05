@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        
+    </head>
+    <body>
+        <div id="page-header">
+            <h1>Hello World!</h1>
+        </div>
+        <p class="main-paragraph">This is an example</p>
+        <p>This is second paragraph</p>
+    </body>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script>
+        let header = d3.select("#page-header");
+        console.log(header.node());
+        let ps = d3.selectAll("p");
+        console.log(ps.nodes());
+        console.log(d3.select("p").text());
+        d3.select("h1").text("change first h1 to this...");
+        d3.selectAll("p").html("change all p-tag to <b>word</b>");
+    </script>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+    </head>
+    <body>
+
+    </body>
+    <script>
+        const lb_to_kg = 0.45;
+        const in_to_m = 0.0245;
+
+        let clients = [{
+            name:"John",
+            weight:180,
+            height:72
+            },
+            {
+            name:"Joe",
+            weight:175,
+            height:72
+            }
+        ]
+        function getBMI(client) {
+            let weightinKg = client.weight * lb_to_kg;
+            let heightinM = client.height * in_to_m;
+
+            let bmi = weightinKg/heightinM/heightinM;
+            return bmi
+        }
+        for (let i = 0; i < clients.length; i += 1){
+            let client = clients[i];
+            let bmi = getBMI(client);
+            document.write(client.name + ':' + bmi +'<br/>');
+        }
+
+        
+    </script>
+</html>
