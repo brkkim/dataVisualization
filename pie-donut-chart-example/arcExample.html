@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Line and Path Example</title>
+        <script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
+        <style>
+            #priceTrend {
+                fill: none;
+                stroke: blue;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="container"></div>
+        <svg id="chart" style="border: solid 1px black">
+            
+        </svg>
+        <div>
+            <h1>D3.JS Arch Generator Example</h1>
+            <div>
+                <h3>Example</h3>
+                <div>let arcGenerator = d3.arc()<br>
+                        .innerRadius(0)<br>
+                        .outerRadius(100);<br>
+                </div>
+                <br>
+                <div>
+                    arcGenerator({<br>
+                        startAngle: 0,<br>
+                        endAngle: Math.PI / 2<br>
+                    });<br>
+                </div>
+                <br>
+                <div>
+                    <h3>Pie Generator</h3>
+                    <p>This change serialized data points into angles.</p>
+                    <div>
+                        d3.pie()<br>
+                        .value(<i>function</i>)
+                    </div>
+                    <h3>Example</h3>
+                    <div>let arcGenerator = d3.arc()</div><br>
+                    <div>let pieGenerator = d3.pie()<br>
+                        .value(d => d.price);
+                    </div>
+                    <br>
+                    <div>
+                        let arcData = pieGenerator(data)<br>...<br>.attr("d", arcGenerator)<br>
+                    </div>
+                </div>
+                <br>
+                <div>
+                    <h2>Drawing Arcs</h2>
+                    <div> Data --> pie generator --> angles info --> Arc generator --> "M0, -100A100, 100, 0,0,1,100,0L0, 0Z"</div>
+                </div>
+            </div>
+            <br>
+        </div>
+        
+    </body>
+    <script>
+        let svg = d3.select("#chart");
+        
+        d3.csv("dataArc.csv").then(showData);
+
+        function showData(data) {
+            let bodyHeight = 400;
+            let bodyWidth = 600;
+            let margin = {left:30, right:10, top:10, bottom:30};
+            let xCenter = bodyWidth /2 + margin.left;
+            let yCenter = bodyHeight /2 + margin.top;
+            
+            let body = svg.append("g")
+                        .attr("class","body")
+                        .attr("transform","translate("+ xCenter + "," + yCenter +")");
+            // adjust SVG shape
+            svg.attr("height", bodyHeight+2*margin.top)  // give it 10px margin top and bottom
+                .attr("width", bodyWidth+2*margin.left);  // give it 30px margin on left
+
+            // setup data
+            data = data.map(d => ({    // this short notation function creates dictionary
+                country: d.country,
+                sales: +d.sales   // + sign converts data to number
+            }))
+
+            let pie = d3.pie()
+                        .value(d => d.sales)  // creates angles based on data
+
+            let colorScale = d3.scaleOrdinal()
+                        .range(d3.schemeCategory10)
+                        .domain(data.map(d => d.country));  // sets color for each country
+
+            let arc = d3.arc()
+                        .outerRadius(bodyHeight/2)
+                        //.innerRadius(0);  // this creates pie chart
+                        .innerRadius(bodyHeight/4);
+
+            let gArc = body.selectAll(".arc")
+                
+                .append("g")
+                .data(pie(data))
+                .enter();
+
+            gArc.append("path")
+                .attr("d", arc)
+                .attr("fill", d =>{ return colorScale(d.data.country);});
+
+        }
+    </script>
+</html>
