@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Line and Path Example</title>
+        <script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
+        <style>
+            .geobody {
+                fill: lightgrey;
+                stroke: grey;
+                opacity: 0.7;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="container"></div>
+        <svg id="chart" style="border: solid 1px black">
+            
+        </svg>
+        <div>
+            <h1>Projections Example</h1>
+            <p>Creating D3 projection of map</p>
+            <ul>
+                <li>geoAzimuthalEqualArea</li>
+                <li>geoOrthographic</li>
+                <li>geoSterographic</li>
+                <li>geoConicEqualArea</li>
+                <li>geoMercator</li>
+                <li>geoNaturalEarth1</li>
+            </ul>
+            <div><h2>Drawing Mps</h2>
+                <p>Requires two components</p>
+                <ul><li>Projection</li><li>GeoPath</li></ul>
+            </div>
+            <div>
+                <h2>GeoJSON</h2>
+                <p>This is used to project map.</p>
+                <p>{
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "MultiPolygon",
+                        "coordinates": [...]
+                    },
+                    "properties": {
+                        "name": "United States of America"
+                    }
+                }
+                </p>
+                <h2>Geo Path</h2>
+                <p> Data --> Geo Path --> Map</p>
+                <h3>API Syntax</h3>
+                <p>d3.geoPath().project(<i>projection</i>)</p>
+                <div>
+                    <h3>Example</h3>
+                    <p>let projection = d3.geoMercator()</p>
+                    <p>let geoPath = d3.geoPath().projection(projection)</p>
+                    <p>chart.selectAll("path")<br>.data(geoJsonData.features)<br>
+                        .enter()<br>
+                    .append("path")<br>
+                    .attr("d", geoPath</p>
+                </div>
+            </div>
+        </div>
+        
+    </body>
+    <script>
+        let svg = d3.select("#chart");
+
+        Promise.all ([d3.csv("dataGeo.csv"),
+                      d3.json("countries.geo.json"),
+                      d3.csv("dataEQLoc.csv")])
+                .then(showData);
+
+        function showData(datasources) {
+            let bodyHeight = 600;
+            let bodyWidth = 1200;
+            let margin = {left:10, right:10, top:10, bottom:10};
+
+            //get data ready
+            let data = datasources[0];
+            let mapInfo = datasources[1];
+            let eqLoc = datasources[2];
+
+            // create data index to easily access data
+            let dataIndex = {};
+            for (let c of data) {
+                let country = c.Country;
+                dataIndex[country] = +c.Magnitude;
+            }
+
+            mapInfo.features = mapInfo.features.map(d => {
+                let country = d.properties.name;
+                let magnitude = dataIndex[country];
+                d.properties.Magnitude = magnitude;
+                return d;
+            })
+
+            let maxEarthquake = d3.max(mapInfo.features, d=>d.properties.Magnitude);
+            let medianEQ = d3.median(mapInfo.features, d => d.properties.Magnitude);
+            let cScale = d3.scaleLinear()
+                            .range(["white","yellow","red"])
+                            .domain([0, medianEQ, maxEarthquake]);
+
+            let geobody = svg.append("g")
+                        .attr("class","geobody")
+                        .attr("transform","translate(0,0)");
+
+            // adjust SVG shape
+            svg.attr("height", bodyHeight+2*margin.top)  // give it 10px margin top and bottom
+                .attr("width", bodyWidth+2*margin.left);  // give it 30px margin on left
+
+            let projection = d3.geoNaturalEarth1()      //d3.geoMercator()
+                                .scale(200)
+                                .translate([bodyWidth/2, bodyHeight/2]);
+
+            let path = d3.geoPath()
+                .projection(projection);
+
+            geobody.selectAll("path")
+                .data(mapInfo.features)
+                .enter()
+                .append("path")
+                .attr("d", d => path(d))
+                .attr("fill", d=> d.properties.Magnitude ? cScale(d.properties.Magnitude) : "lightgrey");
+
+            // Example of putting circle on map
+            /**
+            let p = d3.geoMercator();
+
+            d3.select("#marks")
+                .selectAll("path")
+                .data(data)
+                .enter()
+                .append("circle")
+                .attr("cx", p([d.longitude, d.latitude])[0])
+                .attr("cy", p([d.longitude, d.latitude])[1])
+            **/
+            let eqScale = d3.scalePow()
+                            .range([1,15])
+                            .domain([0, maxEarthquake]);
+
+            let eqColor = d3.scaleLinear()
+                            .range(["yello","orange","red"])
+                            .domain([0, medianEQ, maxEarthquake]);
+
+            geobody.selectAll("circle")
+                .data(eqLoc)
+                .enter()
+                .append("circle")
+                .attr("fill",d => eqColor(d.Magnitude))
+                .attr("r",d => eqScale(d.Magnitude))
+                .attr("cx", d => projection([+d.Longitude, +d.Latitude])[0])
+                .attr("cy", d => projection([+d.Longitude, +d.Latitude])[1]);
+        }
+    </script>
+</html>
