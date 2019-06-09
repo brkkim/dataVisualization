@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>d3 Hierarchy Example</title>
+        <script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
+        <style>
+            #priceTrend {
+                fill: none;
+                stroke: blue;
+            }
+            .links line {
+                stroke: blue;
+                fill: none;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="container"></div>
+        <svg id="chart" height="300" width="500" style="border: solid 1px black">
+        </svg>
+        <h1>Hierarchical Data</h1>
+        <h3>d3.hierarchy(data)</h3>
+        <h3>d3.treemap</h3>
+        <div>d3.treemap()<br>
+            .size([<i>width, height</i>])
+        </div>
+         <div>
+            <h3>Example</h3>
+            <div>
+                let root = d3.hierarchy(data)<br>
+                    .sum(d => d.sales)<br>
+                
+                <br>
+                let treemap = d3.treemap()<br>
+                .size([width, body])<br>
+                <br>
+                treemap(root)<br><br>
+                let cell = body.selectAll("g")<br>
+                    .data(root.leaves())
+                ...
+            </div>
+        </div>
+        
+        
+    </body>
+    <script>
+
+        loadData().then(showData);
+        function loadData() {
+            let promise = d3.json("dataHierarchy.json");
+            return promise;
+        }
+
+        function showData(data) {
+            let body = d3.select("#chart");
+            
+            let bodyHeight = 300;
+            let bodyWidth = 500;
+
+            let treemap = d3.treemap()
+                        .size([bodyWidth, bodyHeight])
+                        .paddingInner(2);
+            
+            let root = d3.hierarchy(data)
+                        .sum(d => d.sales);
+
+            treemap(root);
+
+            // create color scale
+            let cScale = d3.scaleOrdinal(d3.schemeCategory10)
+
+            let cell = body.selectAll("g")
+                        .data(root.leaves())  //lowest child - in this case is the city
+                        .enter()
+                        .append("g")
+                        .attr("transform", d => "translate("+d.x0+","+d.y0+")")
+            
+            // draw rectangles based on data
+            cell.append("rect")
+                .attr("width", d => d.x1 - d.x0)
+                .attr("height", d => d.y1 - d.y0)
+                .attr("fill", d => cScale(d.parent.data.name));
+
+            // add labels
+            cell.append("text")
+                .text(d => d.data.name)
+                .attr("alignment-baseline", "hanging")
+                .attr("fill", "white")
+        }
+        
+
+    </script>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+    </head>
+    <body>
+        <button onclick="addNewClient()">Add</button>
+        <button onclick="removeClient()">Remove</button>
+        <div id="container"></div>
+    </body>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script>
+        let container = d3.select("#container");
+        let clients = [{
+            Name: "Client0"
+        }];
+        let count = clients.length;
+
+        function addNewClient() {
+            clients.push({ Name: "Client" + count});
+            count += 1;
+            showData(clients);
+        }
+
+        function removeClient() {
+            clients = clients.slice(0, -1);
+            //clients.pop();
+            count -= 1;
+            showData(clients);
+        }
+        function showData(clients) {
+            let join = container
+                .selectAll("div")  // find all div tag
+                .data(clients);
+            
+            join.enter()
+                .append("div")  // with all <div> add new <div> tag
+                .text(d => d.Name + " - Added");  // this is equivalent of "function(d) { return d.Name; }"
+            
+            // following is only triggered for existing
+            join.text(d => d.Name);
+            
+            // only trigger when removed
+            join.exit().remove();
+        };
+
+        showData(clients);
+    </script>
+</html>

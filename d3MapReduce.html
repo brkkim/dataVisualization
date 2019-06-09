@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+    </head>
+    <body>
+        <div id="container"></div>
+    </body>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script>
+        const KG_PER_LB = 0.45;
+        const M_PER_IN = 0.0254;
+
+        let container = d3.select("#container");
+        d3.csv("data.csv").then(dataLoaded);
+
+        function dataLoaded(clients) {
+            // add new element using map
+            clients.map(d => {
+                d.BMI = getBMI(d);
+                return d;
+            });
+            showData(clients);
+        };
+
+        function showData(clients) {
+            for (let client of clients) {
+                write(client.Name + ", " + client.BMI);
+            };
+
+            write("------------------------------");
+            // use reduce to calculate mean
+            let sum = clients.reduce((prev, curr) => {
+                return prev + curr.BMI;
+            }, 0);  // 0 represents initial value of sum
+            let mean = sum/clients.length
+            write("Mean: " + mean);
+        };
+
+        function write(text) {
+            container.append("div").text(text);
+        };
+
+        function getBMI(client) {
+            let weightInKg = client.Weight * KG_PER_LB;
+            let heightInM = client.Height * M_PER_IN;
+            let BMI = weightInKg/ heightInM/heightInM;
+            return BMI;
+        }
+    </script>
+</html>

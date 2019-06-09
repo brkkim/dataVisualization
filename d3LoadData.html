@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+    </head>
+    <body>
+        <div id="container"></div>
+    </body>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script>
+        let container = d3.select("#container");
+
+        // load data
+        d3.csv("data.csv").then(function(data) {
+            data.sort((a, b) => {
+                return d3.ascending(a.Name, b.Name);
+            });
+            let filtereddata = data.filter(d => {
+                return d.Weight < 200;
+            })
+            showData(data);
+            container.append("div").html("<br>");
+            showData(filtereddata);
+        });
+
+        function showData(clients) {
+
+            for (let client of clients) {
+                write(client.Name + ', ' + client.Weight + ', ' + client.Height);
+            }
+        };
+        write("Line after");
+
+        function write(text) {
+            container.append("div").text(text);
+        }
+    </script>
+</html>

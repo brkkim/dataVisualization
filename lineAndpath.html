@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Line and Path Example</title>
+        <script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
+        <style>
+            #priceTrend {
+                fill: none;
+                stroke: blue;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="container"></div>
+        <svg id="chart" style="border: solid 1px black">
+            
+        </svg>
+    </body>
+    <script>
+        let body = d3.select("#chart");
+        d3.csv("dataProduct.csv").then(showData);
+
+        function showData(data) {
+            let bodyHeight = 200;
+            let bodyWidth = 600;
+            let margin = {left:30, right:10, top:10, bottom:30};
+            let xAxisLoc = bodyHeight + margin.top;
+        
+            // adjust SVG shape
+            body.attr("height", bodyHeight+50)  // give it 10px margin top and bottom
+                .attr("width", "100%");  // give it 30px margin on left
+
+            // setup data
+            data = data.map(d => ({    // this short notation function creates dictionary
+                date: new Date(d.date),
+                price: +d.price   // + sign converts data to number
+            }))
+
+            // setup y-axis
+            let maxValue = d3.max(data, d => d.price);
+            let yScale = d3.scaleLinear()
+                            .range([bodyHeight, 0])   // SVG coordinate goes from top to bottom so invert it
+                            .domain([0, maxValue]);
+            
+            // setup x-axis based on time
+            let xScale = d3.scaleTime()
+                            .range([0, bodyWidth])
+                            .domain(d3.extent(data, d => d.date));    //d3.extent returns min and max from list
+
+            // create a group to group axes together
+            body.append("g")
+                .attr("class", "axes");
+
+            // add y-axis into svg    
+            body.select(".axes")
+                .append("g")
+                .attr("transform", "translate("+margin.left+","+margin.top+")")  // give 10px margin on top
+                .call(d3.axisLeft(yScale));
+            
+            // add x-axis into group where y-axis is
+            body.select(".axes")  // group axes together
+                .append("g")       // this groups 
+                .attr("transform", "translate("+margin.left+", "+ xAxisLoc +")")
+                .call(d3.axisBottom(xScale)
+                    .tickFormat(d3.timeFormat("%b")));
+
+            // draw line
+            // first create a group to group lines together
+            body.append("g")
+                .attr("id", "priceTrend");
+
+            valueline = d3.line()
+                            .x(d => xScale(d.date))
+                            .y(d => yScale(d.price))
+                            .defined(d => !!d.price)   // this eliminate value that is 0 or unavailable
+                            ;
+            
+            // use css not to close the line and fill and stroke property
+            body.select("#priceTrend")
+                .append("path")
+                .attr("transform", "translate("+margin.left+","+margin.top+")")
+                .datum(data)  // this is binding data to path .data only binds one point data
+                .attr("d", valueline);
+        }
+
+    </script>
+</html>

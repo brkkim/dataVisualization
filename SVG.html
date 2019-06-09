@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>SVG Example</title>
+    </head>
+    <body>
+        <div id="container"></div>
+        <svg style="border: solid 1px black">
+            <g transform="translate(50,30) rotate(45, 50, 30)">
+                <rect x=50 y=50 width=50 height=50 />
+                <circle r=20 cx=30 cy=30 fill="red"/>
+                <text>Text</text>
+            </g>
+        </svg>
+    </body>
+    <script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
+    <script>
+        const KG_PER_LB = 0.45;
+        const M_PER_IN = 0.0254;
+
+        let container = d3.select("#container");
+        d3.csv("data.csv").then(showData);
+
+        function showData(clients) {
+            for (let client of clients) {
+                write(client.Name + ", " + client.Weight);
+            };
+
+            write("------------------------------");
+            // use reduce to calculate mean
+            let weightSum = d3.sum(clients, (d) => d.Weight);  // 0 represents initial value of sum
+            write("Sum: " + weightSum);
+
+            let weightMean = d3.mean(clients, (d) => d.Weight);
+            write("Weight Mean: " + weightMean);
+
+            let extent = d3.extent(clients, (d) => d.Weight);
+            write("Extent: " + extent);
+        };
+
+        function write(text) {
+            container.append("div").text(text);
+        };
+
+        function getBMI(client) {
+            let weightInKg = client.Weight * KG_PER_LB;
+            let heightInM = client.Height * M_PER_IN;
+            let BMI = weightInKg/ heightInM/heightInM;
+            return BMI;
+        }
+    </script>
+</html>

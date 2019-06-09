@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+    </head>
+    <body>
+        <div id="container"></div>
+        <svg id="ordinalContainer" height="300" width="400">
+            <g id="body" style="transform:translate(50px,0px)"></g>
+            <g id="yAxis"></g>
+            <g id="xAxis"></g>
+        </svg>
+    </body>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script>
+        
+        let container = d3.select("#container");
+        let body = d3.select("#body");
+
+        d3.csv("data.csv").then(showData);
+        d3.csv("data.csv").then(ordinalShowData);
+
+        function write(text) {
+            container.append("div").text(text);
+        };
+        // Linear 
+        function showData(clients) {
+            let max = d3.max(clients, d => d.Weight);
+            let scale = d3.scaleLinear()
+                            .range([0, 200])
+                            .domain([0, max]);
+
+            let join = container
+                .selectAll("div")  // find all div tag
+                .data(clients);
+            
+            join.enter()
+                .append("div")  // with all <div> add new <div> tag
+                .text(d => d.Name + ":" + scale(d.Weight))  // this is equivalent of "function(d) { return d.Name; }"
+                .style("background-color", "green")
+                .style("margin", "5px")
+                .style("color","white")
+                .style("width",d=>scale(d.Weight)+"px");
+
+        };
+
+        function ordinalShowData(clients) {
+            let max = d3.max (clients, d => d.Weight);
+            // y axis setup base on peron's name
+            let widthScale = d3.scaleLinear()
+                            .range([0, 300])
+                            .domain([0, max]);
+            // proportionately setup y axis based on values in the data
+            let positionScale = d3.scaleBand()
+                                .range([0, 200])
+                                .padding(0.2)
+                                .domain(clients.map(d => d.Name));
+            // draw rectangle on SVG tag
+            let join = body
+                        .selectAll("rect")
+                        .data(clients);
+
+            join.enter()
+                .append("rect")
+                .attr("fill", "blue")
+                .attr("width", d => widthscale(d.Weight))
+                .attr("height", positionScale.bandwidth())
+                .attr("y", d => positionScale(d.Name));
+
+            let xAxis = d3.axisBottom(widthScale)
+                        .ticks(4)
+                        .tickFormat(d => d + " lb");
+            d3.select("#xAxis")
+                .attr("transform","translate(50,200)")
+                .call(xAxis);
+            
+            let yAxis = d3.axisLeft(positionScale);
+            d3.select("#yAxis")
+                .attr("transform","translate(50,0)")  // move to the right position
+                .call(yAxis);
+        }
+    </script>
+</html>

@@ -1,0 +1,16 @@
+{
+	"nodes" : [
+		{"id": "Brian"},
+		{"id": "Ethan"},
+		{"id": "Jaime"},
+		{"id": "Ian"},
+		{"id": "Geoff"}
+	],
+	"links" : [
+		{"source": "Brian", "target": "Ethan"},
+		{"source": "Brian", "target": "Jaime"},
+		{"source": "Brian", "target": "Ian"},
+		{"source": "Ethan", "target": "Ian"},
+		{"source": "Brian", "target": "Geoff"}
+	]
+}

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>d3 Event Listener Example</title>
+        <script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
+        <style>
+            #priceTrend {
+                fill: none;
+                stroke: blue;
+            }
+            .links line {
+                stroke: blue;
+                fill: none;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="container"></div>
+        <svg id="chart" height="300" width="500" style="border: solid 1px black">
+        </svg>
+        <div id="details">
+            <div style="color: #999">
+                User Details...
+            </div>
+         </div>
+        <h1>Listening to Events</h1>
+        <h2>USER ---> Listenter (click/mouseover/change/etc.)</h2>
+        <h3>selection.on(<i>event, handlerFunction</i>)</h3>
+        <h3>Handler Function</h3>
+        <div>this ----> button tag
+            <div>d3.select(this)</div>
+            <div> () => {} <br> if "this" reference needs to be used, <b>=></b> cannot be used.</div>
+            <div>function() {}</div>
+        </div>
+        <div>
+            d3.event
+        </div>
+         <div>
+            <h3>Example</h3>
+            <div>
+                body.selectAll("circle") <br>
+                .on("click", function(d) {<br>
+                    if(d3.event.shiftKey) {<br>
+                        ...<br>
+                        alert("Saved, " + d.Name)<br>
+                        this.style.fill = "blue"<br>
+                    }<br>
+                })<br>
+            </div>
+        </div>
+        
+        
+    </body>
+    <script>
+
+        loadData().then(showData);
+        function loadData() {
+            let promise = d3.json("dataHierarchy.json");
+            return promise;
+        }
+
+        function showData(data) {
+            let body = d3.select("#chart");
+            
+            let bodyHeight = 300;
+            let bodyWidth = 500;
+
+            let treemap = d3.treemap()
+                        .size([bodyWidth, bodyHeight])
+                        .paddingInner(2);
+            
+            let root = d3.hierarchy(data)
+                        .sum(d => d.sales);
+
+            treemap(root);
+
+            // create color scale
+            let cScale = d3.scaleOrdinal(d3.schemeCategory10)
+
+            let cell = body.selectAll("g")
+                        .data(root.leaves())  //lowest child - in this case is the city
+                        .enter()
+                        .append("g")
+                        .attr("transform", d => "translate("+d.x0+","+d.y0+")")
+                        .on("click", d => {
+                            d3.selectAll("#details")
+                              .text(d.data.name);
+                        })
+                        
+                        
+            
+            // draw rectangles based on data
+            cell.append("rect")
+                .attr("width", d => d.x1 - d.x0)
+                .attr("height", d => d.y1 - d.y0)
+                .attr("fill", d => cScale(d.parent.data.name))
+                .on("mouseover", function() {
+                            this.style.fill = "red"
+                        })
+                .on("mouseout", function(d) {
+                    this.style.fill = cScale(d.parent.data.name);
+                });
+
+            // add labels
+            cell.append("text")
+                .text(d => d.data.name)
+                .attr("alignment-baseline", "hanging")
+                .attr("fill", "white")
+
+            let line = d3.select("#chart").append("g")
+                        .attr("transform", "translate(0,-10)")
+
+            line = line.append("line")
+                .attr("x1", 0)
+                .attr("x2", 0)
+                .attr("y1", 0)
+                .attr("y2", 300)
+                .attr("stroke", "yellow")
+                .attr("stroke-width", "3px")
+            
+            d3.select("#chart").on("mousemove", function() {
+                let x = d3.mouse(this)[0]
+                //let x = d3.event.x;
+                let y = d3.event.y;
+
+                line.attr("transform", "translate("+ x + ", -10)")
+            })
+            
+        }
+        
+
+    </script>
+</html>
