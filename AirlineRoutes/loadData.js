@@ -3,11 +3,13 @@ let store = {};  // setup an empty dictionary for data storage
 
 // load data by reading from a .csv file
 function loadData() {
-    let promise = d3.csv("routes.csv");
-
-    return promise.then(routes => {
-        store.routes = routes;  // when file is read, store .csv into dictionary structure
-    })
+    return Promise.all([d3.csv("routes.csv"),
+                        d3.json("countries.geo.json")])
+                  .then(files => { 
+                                    store.routes = files[0]; 
+                                    store.geoJSON = files[1]; 
+                                    return store;
+                                });
 }
 
 function groupByAirline(data) {

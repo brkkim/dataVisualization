@@ -1,12 +1,17 @@
 function showData() {
-    //Get the routes from our store variable.
-    let routes = store.routes;
-
+    //Get the routes from our store variable
+    let routes = store.routes
     // Compute the number of routes per airline.
     let airlines = groupByAirline(store.routes);
+    //console.log(airlines)
+    drawAirlinesChart(airlines)
+    drawMap(store.geoJSON)
+
+    let airports = groupByAirport(store.routes);
+    drawAirports(airports)
     
-    // Draw Airlines barchart
-    drawAirlinesChart(airlines);
+    //drawRoutes(store.routes, "24") // <- add this line
+
 }
 
 function getAirlinesChartConfig() {
@@ -64,12 +69,25 @@ function drawBarsAirlinesChart(airlines, scales, config) {
                     .data(airlines);
         // Use the .data method to bind the airlines to the bars (elements with class bar)
 
+    let selectedAirline = undefined;
+
     //Adding a rect tag for each airline
     bars.enter().append("rect")
         .attr("height", yScale.bandwidth())
         .attr("width", (d) => xScale(d.Count))
         .attr("y", (d) => yScale(d.AirlineName))     //set the width of the bar to be proportional to the airline count using the xScale
-        .attr("fill", "#2a5599");  // this should be migrated to .css file
+        .attr("fill", "#2a5599")  // this should be migrated to .css file
+        .on("mouseenter", function(d) { // <- this is the new code
+            selectedAirline = d.AirlineID;
+            drawRoutes(selectedAirline);  //TODO: call the drawRoutes function passing the AirlineID id 'd'
+            this.style.fill = "#992a5b";//TODO: change the fill color of the bar to "#992a5b" as a way to highlight the bar. Hint: use d3.select(this)
+        }) // highlight barchart's bar in red when selected
+        .on("mouseleave", function(d) {
+            drawRoutes(null);
+            this.style.fill = "#2a5599";
+        })//TODO: Add another listener, this time for mouseleave
+        //TODO: In this listener, call drawRoutes(null), this will cause the function to remove all lines in the chart since there is no airline withe AirlineID == null.
+        //TODO: change the fill color of the bar back to "#2a5599"
   }
 
 function drawAxesAirlinesChart(airlines, scales, config){
